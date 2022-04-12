@@ -1647,7 +1647,6 @@ function gadgetHandler:UnitFeatureCollision(colliderID, collideeID)
 	return false
 end
 
-
 function gadgetHandler:StockpileChanged(unitID, unitDefID, unitTeam,
                                         weaponNum, oldCount, newCount)
   for _,g in r_ipairs(self.StockpileChangedList) do
@@ -1745,6 +1744,11 @@ function gadgetHandler:ProjectileDestroyed(proID)
   end
 end
 
+function gadgetHandler:WeaponFireStarted(unitID, unitDefID, weaponDefID, numWeapon)
+  for _,g in r_ipairs(self.WeaponFireStartedList) do
+    g:WeaponFireStarted(unitID, unitDefID, weaponDefID, numWeapon)
+  end
+end
 
 --------------------------------------------------------------------------------
 --

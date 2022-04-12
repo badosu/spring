@@ -551,9 +551,18 @@ bool CLuaHandle::HasCallIn(lua_State* L, const string& name) const
 
 bool CLuaHandle::UpdateCallIn(lua_State* L, const string& name)
 {
+  if (name == "WeaponFireStarted") {
+	  LOG_L(L_ERROR, "!!! UpdateCallIn WeaponFireStarted !!!");
+  }
 	if (HasCallIn(L, name)) {
+    if (name == "WeaponFireStarted") {
+	    LOG_L(L_ERROR, "!!! HasCallIn WeaponFireStarted !!!");
+    }
 		eventHandler.InsertEvent(this, name);
 	} else {
+    if (name == "WeaponFireStarted") {
+	    LOG_L(L_ERROR, "!!! NOT HasCallIn WeaponFireStarted !!!");
+    }
 		eventHandler.RemoveEvent(this, name);
 	}
 	return true;
@@ -1557,7 +1566,39 @@ void CLuaHandle::StockpileChanged(const CUnit* unit,
 	RunCallIn(L, cmdStr, 6, 0);
 }
 
+void CLuaHandle::WeaponFireStarted(const CWeapon* weapon)
+{
+	LOG_L(L_ERROR, "[LuaHandle::WeaponFired] FIREDDD!!!!");
+	// if empty, we are not a LuaHandleSynced
+	if (watchWeaponFireDefs.empty())
+		return;
 
+	assert(weapon->synced);
+
+	const CUnit* owner = weapon->owner;
+	const UnitDef* unitDef = owner->unitDef;
+	const WeaponDef* weaponDef = weapon->weaponDef;
+
+	// if this weapon-type is not being watched, bail
+	if (!watchWeaponFireDefs[weaponDef->id])
+		return;
+
+	LUA_CALL_IN_CHECK(L);
+	luaL_checkstack(L, 5, __func__);
+
+	static const LuaHashString cmdStr(__func__);
+
+	if (!cmdStr.GetGlobalFunc(L))
+		return;
+
+	lua_pushnumber(L, owner->id);
+	lua_pushnumber(L, unitDef->id);
+	lua_pushnumber(L, weaponDef->id);
+	lua_pushnumber(L, weapon->weaponNum);
+
+	// call the routine
+	RunCallIn(L, cmdStr, 3, 0);
+}
 
 bool CLuaHandle::RecvLuaMsg(const string& msg, int playerID)
 {

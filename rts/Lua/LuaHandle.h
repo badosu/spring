@@ -182,6 +182,7 @@ class CLuaHandle : public CEventClient
 
 		void StockpileChanged(const CUnit* owner,
 		                      const CWeapon* weapon, int oldCount) override;
+		void WeaponFireStarted(const CWeapon* weapon) override;
 
 		void Save(zipFile archive) override;
 
@@ -323,6 +324,7 @@ class CLuaHandle : public CEventClient
 		std::vector<bool> watchProjectileDefs;  // callin masks for Projectile*
 		std::vector<bool> watchExplosionDefs;   // callin masks for Explosion
 		std::vector<bool> watchAllowTargetDefs; // callin masks for AllowWeapon*Target*
+		std::vector<bool> watchWeaponFireDefs;  // callin masks for WeaponFire*
 
 	private: // call-outs
 		static int KillActiveHandle(lua_State* L);

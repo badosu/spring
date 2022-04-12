@@ -193,6 +193,7 @@ class CEventClient
 
 		virtual void StockpileChanged(const CUnit* unit,
 		                              const CWeapon* weapon, int oldCount) {}
+		virtual void WeaponFireStarted(const CWeapon* weapon) {}
 
 		virtual bool Explosion(int weaponID, int projectileID, const float3& pos, const CUnit* owner) { return false; }
 

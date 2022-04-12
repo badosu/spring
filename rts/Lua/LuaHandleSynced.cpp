@@ -366,6 +366,7 @@ bool CSyncedLuaHandle::Init(const std::string& code, const std::string& file)
 	watchExplosionDefs.resize(weaponDefHandler->NumWeaponDefs(), false);
 	watchProjectileDefs.resize(weaponDefHandler->NumWeaponDefs() + 1, false); // last bit controls piece-projectiles
 	watchAllowTargetDefs.resize(weaponDefHandler->NumWeaponDefs(), false);
+	watchWeaponFireDefs.resize(weaponDefHandler->NumWeaponDefs(), false);
 
 	// load the standard libraries
 	SPRING_LUA_OPEN_LIB(L, luaopen_base);
@@ -419,6 +420,8 @@ bool CSyncedLuaHandle::Init(const std::string& code, const std::string& file)
 		LuaPushNamedCFunc(L, "SetWatchFeature",      SetWatchFeatureDef);
 		LuaPushNamedCFunc(L, "GetWatchExplosion",    GetWatchExplosionDef);
 		LuaPushNamedCFunc(L, "SetWatchExplosion",    SetWatchExplosionDef);
+		LuaPushNamedCFunc(L, "GetWatchWeaponFire",   GetWatchWeaponFireDef);
+		LuaPushNamedCFunc(L, "SetWatchWeaponFire",   SetWatchWeaponFireDef);
 		LuaPushNamedCFunc(L, "GetWatchProjectile",   GetWatchProjectileDef);
 		LuaPushNamedCFunc(L, "SetWatchProjectile",   SetWatchProjectileDef);
 		LuaPushNamedCFunc(L, "GetWatchAllowTarget",  GetWatchAllowTargetDef);
@@ -1643,6 +1646,11 @@ int CSyncedLuaHandle::GetWatchWeaponDef(lua_State* L) {
 		watched |= luaL_checkboolean(L, -1);
 		lua_pop(L, 1);
 	}
+	{
+		GetWatchWeaponFireDef(L);
+		watched |= luaL_checkboolean(L, -1);
+		lua_pop(L, 1);
+	}
 
 	lua_pushboolean(L, watched);
 	return 1;
@@ -1653,12 +1661,14 @@ GetWatchDef(Feature)
 GetWatchDef(Explosion)
 GetWatchDef(Projectile)
 GetWatchDef(AllowTarget)
+GetWatchDef(WeaponFire)
 
 SetWatchDef(Unit)
 SetWatchDef(Feature)
 SetWatchDef(Explosion)
 SetWatchDef(Projectile)
 SetWatchDef(AllowTarget)
+SetWatchDef(WeaponFire)
 
 #undef GetWatchDef
 #undef SetWatchDef

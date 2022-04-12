@@ -1686,6 +1686,7 @@ void CCommandAI::WeaponFired(CWeapon* weapon, const bool searchForNewTarget)
 	assert(&c == &commandQue.front());
 
 	eoh->WeaponFired(*owner, *(weapon->weaponDef));
+	eventHandler.WeaponFireStarted(weapon);
 
 	if (!orderFinished)
 		return;

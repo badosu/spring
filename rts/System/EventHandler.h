@@ -134,6 +134,7 @@ class CEventHandler
 
 		void StockpileChanged(const CUnit* unit,
 		                      const CWeapon* weapon, int oldCount);
+		void WeaponFireStarted(const CWeapon* weapon);
 
 		bool CommandFallback(const CUnit* unit, const Command& cmd);
 		bool AllowCommand(const CUnit* unit, const Command& cmd, int playerNum, bool fromSynced, bool fromLua);
@@ -668,6 +669,26 @@ inline void CEventHandler::ProjectileDestroyed(const CProjectile* proj, int ally
 			ec->ProjectileDestroyed(proj);
 		}
 	}
+}
+
+inline void CEventHandler::WeaponFireStarted(const CWeapon* weapon)
+{
+	const size_t count = listWeaponFireStarted.size();
+	LOG_L(L_ERROR, "TRIGGERED FROM EVENTHANDLER, SIZE: %i", (int)count);
+
+	for (size_t i = 0; i < count; i++) {
+		CEventClient* ec = listWeaponFireStarted[i];
+		LOG_L(L_ERROR, "TRIGGERED FROM INSIDELOOP");
+		ec->WeaponFireStarted(weapon);
+	}
+	// const size_t count = listProjectileCreated.size();
+	// for (size_t i = 0; i < count; i++) {
+	// 	CEventClient* ec = listProjectileCreated[i];
+	// 	if ((allyTeam < 0) || // projectile had no owner at creation
+	// 	    ec->CanReadAllyTeam(allyTeam)) {
+	// 		ec->ProjectileCreated(proj);
+	// 	}
+	// }
 }
 
 

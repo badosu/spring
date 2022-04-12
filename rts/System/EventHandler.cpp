@@ -142,6 +142,9 @@ bool CEventHandler::IsController(const std::string& eName) const
 
 bool CEventHandler::InsertEvent(CEventClient* ec, const std::string& ciName)
 {
+  if (ciName == "WeaponFireStarted") {
+	  LOG_L(L_ERROR, "!!! InsertEvent WeaponFireStarted !!!");
+  }
 	const auto comp = [](const EventPair& a, const EventPair& b) { return (a.first < b.first); };
 	const auto iter = std::lower_bound(eventMap.begin(), eventMap.end(), EventPair{ciName, {}}, comp);
 
