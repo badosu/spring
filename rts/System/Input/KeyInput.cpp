@@ -7,6 +7,7 @@
 
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
+#include <SDL_scancode.h>
 #include <SDL_events.h>
 #include <SDL_stdinc.h>
 
@@ -88,6 +89,19 @@ namespace KeyInput {
 	const std::vector<Key>& GetPressedKeys()
 	{
 		return keyVec;
+	}
+
+	int GetNormalizedScanSymbol(int sym)
+	{
+		switch (sym) {
+			case SDL_SCANCODE_RSHIFT: { return SDL_SCANCODE_LSHIFT; } break;
+			case SDL_SCANCODE_RCTRL : { return SDL_SCANCODE_LCTRL ; } break;
+			case SDL_SCANCODE_RGUI  : { return SDL_SCANCODE_LGUI  ; } break;
+			case SDL_SCANCODE_RALT  : { return SDL_SCANCODE_LALT  ; } break;
+			default                 : {                             } break;
+		}
+
+		return sym;
 	}
 
 	int GetNormalizedKeySymbol(int sym)

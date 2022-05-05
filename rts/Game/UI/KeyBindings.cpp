@@ -419,7 +419,7 @@ static bool ParseSingleChain(const std::string& keystr, CKeyChain* kc)
 		ss.getline(kcstr, 256, ',');
 		std::string kstr(kcstr);
 
-		if (!ks.Parse(kstr, false))
+		if (!ks.Parse(kstr, true))
 			return false;
 
 		kc->emplace_back(ks);

@@ -154,7 +154,7 @@ void CKeyCodes::Reset()
 	AddPair("delete",    SDLK_DELETE);
 
 	// ASCII mapped keysyms
-	for (unsigned char i = ' '; i <= 'z'; ++i) {
+	for (signed char i = ' '; i <= 'z'; ++i) {
 		if (isupper(i))
 			continue;
 

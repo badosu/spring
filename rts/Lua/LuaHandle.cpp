@@ -1989,7 +1989,7 @@ void CLuaHandle::Pong(uint8_t pingTag, const spring_time pktSendTime, const spri
 /******************************************************************************/
 /******************************************************************************/
 
-bool CLuaHandle::KeyPress(int key, bool isRepeat)
+bool CLuaHandle::KeyPress(int keyCode, int scanCode, bool isRepeat)
 {
 	LUA_CALL_IN_CHECK(L, false);
 	luaL_checkstack(L, 6, __func__);
@@ -2000,7 +2000,7 @@ bool CLuaHandle::KeyPress(int key, bool isRepeat)
 		return false;
 
 	//FIXME we should never had started using directly SDL consts, somaeday we should weakly force lua-devs to fix their code
-	lua_pushinteger(L, SDL21_keysyms(key));
+	lua_pushinteger(L, SDL21_keysyms(keyCode));
 
 	lua_createtable(L, 0, 4);
 	HSTR_PUSH_BOOL(L, "alt",   !!KeyInput::GetKeyModState(KMOD_ALT));
@@ -2010,7 +2010,7 @@ bool CLuaHandle::KeyPress(int key, bool isRepeat)
 
 	lua_pushboolean(L, isRepeat);
 
-	CKeySet ks(key, false);
+	CKeySet ks(keyCode, false);
 	lua_pushsstring(L, ks.GetString(true));
 	lua_pushinteger(L, 0); //FIXME remove, was deprecated utf32 char (now uses TextInput for that)
 
@@ -2024,7 +2024,7 @@ bool CLuaHandle::KeyPress(int key, bool isRepeat)
 }
 
 
-bool CLuaHandle::KeyRelease(int key)
+bool CLuaHandle::KeyRelease(int keyCode, int scanCode)
 {
 	LUA_CALL_IN_CHECK(L, false);
 	luaL_checkstack(L, 5, __func__);
@@ -2032,7 +2032,7 @@ bool CLuaHandle::KeyRelease(int key)
 	if (!cmdStr.GetGlobalFunc(L))
 		return false;
 
-	lua_pushinteger(L, SDL21_keysyms(key));
+	lua_pushinteger(L, SDL21_keysyms(keyCode));
 
 	lua_createtable(L, 0, 4);
 	HSTR_PUSH_BOOL(L, "alt",   !!KeyInput::GetKeyModState(KMOD_ALT));
@@ -2040,7 +2040,7 @@ bool CLuaHandle::KeyRelease(int key)
 	HSTR_PUSH_BOOL(L, "meta",  !!KeyInput::GetKeyModState(KMOD_GUI));
 	HSTR_PUSH_BOOL(L, "shift", !!KeyInput::GetKeyModState(KMOD_SHIFT));
 
-	CKeySet ks(key, false);
+	CKeySet ks(keyCode, false);
 	lua_pushsstring(L, ks.GetString(true));
 	lua_pushinteger(L, 0); //FIXME remove, was deprecated utf32 char (now uses TextInput for that)
 
