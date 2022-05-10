@@ -59,7 +59,7 @@ class CKeyBindings : public CommandReceiver
 	protected:
 		struct KeySetHash {
 			uint64_t operator ()(const CKeySet& ks) const {
-				return ((ks.Key() * 6364136223846793005ull + ks.Mod() * 9600629759793949339ull) % 15726070495360670683ull);
+				return (((unsigned long long)ks.Key() * 6364136223846793005ull + ks.Mod() * 9600629759793949339ull) % 15726070495360670683ull);
 			}
 		};
 

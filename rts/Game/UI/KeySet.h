@@ -10,8 +10,12 @@
 
 class CKeySet {
 	public:
+
+		enum CKeySetType { KSScanCode, KSKeyCode };
+
 		CKeySet() { Reset(); }
 		CKeySet(int key, bool release);
+		CKeySet(int key, bool release, CKeySetType codeType);
 
 		void Reset();
 		void SetAnyBit();
@@ -39,6 +43,8 @@ class CKeySet {
 		bool Release() const { return !!(modifiers & KS_RELEASE); }
 
 		bool IsPureModifier() const;
+		bool IsModifier() const;
+		bool IsKeyCode() const;
 
 		bool operator<(const CKeySet& ks) const
 		{
@@ -69,6 +75,7 @@ class CKeySet {
 
 	protected:
 		int key;
+		CKeySetType type;
 		unsigned char modifiers;
 };
 

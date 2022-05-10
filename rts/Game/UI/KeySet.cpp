@@ -3,6 +3,7 @@
 
 #include "KeySet.h"
 #include "KeyCodes.h"
+#include "ScanCodes.h"
 #include "KeyBindings.h"
 
 #include "System/Log/ILog.h"
@@ -45,11 +46,26 @@ bool CKeySet::IsPureModifier() const
 	return (CKeyCodes::IsModifier(Key()) || (Key() == keyBindings.GetFakeMetaKey()));
 }
 
+bool CKeySet::IsModifier() const
+{
+	return (IsKeyCode() and keyCodes.IsModifier(key)) || scanCodes.IsModifier(key);
+}
+
+bool CKeySet::IsKeyCode() const
+{
+	return type == KSKeyCode;
+}
 
 CKeySet::CKeySet(int k, bool release)
 {
+	CKeySet(k, release, KSKeyCode);
+}
+
+CKeySet::CKeySet(int k, bool release, CKeySetType keyType)
+{
 	key = k;
 	modifiers = 0;
+	type = keyType;
 
 	if (KeyInput::GetKeyModState(KMOD_ALT))   { modifiers |= KS_ALT; }
 	if (KeyInput::GetKeyModState(KMOD_CTRL))  { modifiers |= KS_CTRL; }
@@ -68,9 +84,17 @@ std::string CKeySet::GetString(bool useDefaultKeysym) const
 	std::string modstr;
 
 	if (useDefaultKeysym) {
-		name = keyCodes.GetDefaultName(key);
+		if (IsKeyCode()) {
+			name = keyCodes.GetDefaultName(key);
+		} else {
+			name = scanCodes.GetDefaultName(key);
+		}
 	} else {
-		name = keyCodes.GetName(key);
+		if (IsKeyCode()) {
+			name = keyCodes.GetName(key);
+		} else {
+			name = scanCodes.GetName(key);
+		}
 	}
 	
 #ifndef DISALLOW_RELEASE_BINDINGS
@@ -133,6 +157,8 @@ bool CKeySet::Parse(const std::string& token, bool showerror)
 		s = s.substr(1, s.size() - 2);
 
 	if (s.find("0x") == 0) {
+		type = KSKeyCode;
+
 		const char* start = (s.c_str() + 2);
 		char* end;
 		key = strtol(start, &end, 16);
@@ -141,15 +167,17 @@ bool CKeySet::Parse(const std::string& token, bool showerror)
 			if (showerror) LOG_L(L_ERROR, "KeySet: Bad hex value: %s", s.c_str());
 			return false;
 		}
+	} else if (((key = keyCodes.GetCode(s)) > 0)) {
+		type = KSKeyCode;
+	} else if (((key = scanCodes.GetCode(s)) > 0)) {
+		type = KSScanCode;
 	} else {
-		if ((key = keyCodes.GetCode(s)) < 0) {
-			Reset();
-			if (showerror) LOG_L(L_ERROR, "KeySet: Bad keysym: %s", s.c_str());
-			return false;
-		}
+		Reset();
+		if (showerror) LOG_L(L_ERROR, "KeySet: Bad keysym: %s", s.c_str());
+		return false;
 	}
 
-	if (keyCodes.IsModifier(key))
+	if (IsModifier())
 		modifiers |= KS_ANYMOD;
 
 	if (AnyMod())

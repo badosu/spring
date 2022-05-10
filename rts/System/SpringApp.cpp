@@ -39,6 +39,7 @@
 #include "Game/PreGame.h"
 #include "Game/UI/KeyBindings.h"
 #include "Game/UI/KeyCodes.h"
+#include "Game/UI/ScanCodes.h"
 #include "Game/UI/InfoConsole.h"
 #include "Game/UI/MouseHandler.h"
 #include "Lua/LuaOpenGL.h"
@@ -272,6 +273,7 @@ bool SpringApp::Init()
 	agui::gui = new agui::Gui();
 	#endif
 	keyCodes.Reset();
+	scanCodes.Reset();
 
 	CNamedTextures::Init();
 	LuaOpenGL::Init();
