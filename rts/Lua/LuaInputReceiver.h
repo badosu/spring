@@ -14,7 +14,7 @@ class CLuaInputReceiver : public CInputReceiver
 		CLuaInputReceiver();
 		~CLuaInputReceiver();
 
-		static CLuaInputReceiver* GetInstace();
+		static CLuaInputReceiver* GetInstance();
 
 		bool KeyPressed(int keyCode, int scanCode, bool isRepeat);
 		bool KeyReleased(int keyCode, int scanCode);
@@ -28,7 +28,7 @@ class CLuaInputReceiver : public CInputReceiver
 		void Draw();
 };
 
-#define luaInputReceiver CLuaInputReceiver::GetInstace()
+#define luaInputReceiver CLuaInputReceiver::GetInstance()
 
 #endif /* LUA_INPUT_RECEIVER */
 

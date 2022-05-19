@@ -16,7 +16,7 @@ CLuaInputReceiver::CLuaInputReceiver()
 CLuaInputReceiver::~CLuaInputReceiver() = default;
 
 
-CLuaInputReceiver* CLuaInputReceiver::GetInstace()
+CLuaInputReceiver* CLuaInputReceiver::GetInstance()
 {
 	static CLuaInputReceiver instance;
 
