@@ -1,5 +1,6 @@
 /* This file is part of the Spring engine (GPL v2 or later), see LICENSE.html */
 
+#include <cctype>
 #include <SDL_keycode.h>
 
 #include "KeyCodes.h"
@@ -46,7 +47,7 @@ void CKeyCodes::Reset()
 	AddPair("delete",    SDLK_DELETE);
 
 	// ASCII mapped keysyms
-	for (signed char i = ' '; i <= 'z'; ++i) {
+	for (unsigned char i = ' '; i <= 'z'; ++i) {
 		if (isupper(i))
 			continue;
 
