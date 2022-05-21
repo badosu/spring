@@ -206,7 +206,8 @@ CR_REG_METADATA(CGame, (
 	CR_MEMBER(luaGCControl),
 
 	CR_IGNORED(jobDispatcher),
-	CR_IGNORED(curKeyChain),
+	CR_IGNORED(curKeyCodeChain),
+	CR_IGNORED(curScanCodeChain),
 	CR_IGNORED(worldDrawer),
 	CR_IGNORED(saveFileHandler),
 
@@ -1007,12 +1008,14 @@ int CGame::KeyPressed(int keyCode, int scanCode, bool isRepeat)
 	if (!gameOver && !isRepeat)
 		playerHandler.Player(gu->myPlayerNum)->currentStats.keyPresses++;
 
-	const CKeySet ks(keyCode, false);
-	curKeyChain.push_back(keyCode, spring_gettime(), isRepeat);
+	const CKeySet kc(keyCode, CKeySet::KSKeyCode);
+	const CKeySet ks(scanCode, CKeySet::KSScanCode);
+
+	curKeyCodeChain.push_back(kc, spring_gettime(), isRepeat);
+	curScanCodeChain.push_back(ks, spring_gettime(), isRepeat);
 
 	// Get the list of possible key actions
-	//LOG_L(L_DEBUG, "curKeyChain: %s", curKeyChain.GetString().c_str());
-	const CKeyBindings::ActionList& actionList = keyBindings.GetActionList(curKeyChain);
+	const CKeyBindings::ActionList& actionList = keyBindings.GetActionList(curKeyCodeChain, curScanCodeChain);
 
 	if (gameTextInput.ConsumePressedKey(keyCode, scanCode, actionList))
 		return 0;
@@ -1020,12 +1023,12 @@ int CGame::KeyPressed(int keyCode, int scanCode, bool isRepeat)
 	if (luaInputReceiver->KeyPressed(keyCode, scanCode, isRepeat))
 		return 0;
 
+
 	// try the input receivers
 	for (CInputReceiver* recv: CInputReceiver::GetReceivers()) {
 		if (recv != nullptr && recv->KeyPressed(keyCode, scanCode, isRepeat))
 			return 0;
 	}
-
 
 	// try our list of actions
 	for (const Action& action: actionList) {
@@ -1040,6 +1043,7 @@ int CGame::KeyPressed(int keyCode, int scanCode, bool isRepeat)
 			luaUI->GotChatMsg(action.rawline, false);
 		}
 	}
+
 	if (luaMenu != nullptr) {
 		for (const Action& action: actionList) {
 			luaMenu->GotChatMsg(action.rawline, false);
@@ -1066,8 +1070,7 @@ int CGame::KeyReleased(int keyCode, int scanCode)
 	}
 
 	// try our list of actions
-	CKeySet ks(keyCode, true);
-	const CKeyBindings::ActionList& al = keyBindings.GetActionList(ks);
+	const CKeyBindings::ActionList& al = keyBindings.GetActionList(keyCode, scanCode);
 	for (const Action& action: al) {
 		if (ActionReleased(action))
 			return 0;
@@ -2050,13 +2053,13 @@ void CGame::ActionReceived(const Action& action, int playerID)
 	}
 }
 
-bool CGame::ActionPressed(unsigned int key, unsigned int scanCode, const Action& action, bool isRepeat)
+bool CGame::ActionPressed(unsigned int keyCode, unsigned int scanCode, const Action& action, bool isRepeat)
 {
 	const IUnsyncedActionExecutor* executor = unsyncedGameCommands->GetActionExecutor(action.command);
 
 	if (executor != nullptr) {
 		// an executor for that action was found
-		if (executor->ExecuteAction(UnsyncedAction(action, key, isRepeat)))
+		if (executor->ExecuteAction(UnsyncedAction(action, keyCode, isRepeat)))
 			return true;
 	}
 

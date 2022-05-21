@@ -13,9 +13,6 @@
 #include <SDL_keycode.h>
 
 
-#define DISALLOW_RELEASE_BINDINGS
-
-
 /******************************************************************************/
 //
 // CKeySet
@@ -25,6 +22,7 @@ void CKeySet::Reset()
 {
 	key = -1;
 	modifiers = 0;
+	type = KSKeyCode;
 }
 
 
@@ -43,12 +41,12 @@ void CKeySet::SetAnyBit()
 
 bool CKeySet::IsPureModifier() const
 {
-	return (CKeyCodes::IsModifier(Key()) || (Key() == keyBindings.GetFakeMetaKey()));
+	return (keyCodes.IsModifier(Key()) || (Key() == keyBindings.GetFakeMetaKey()));
 }
 
 bool CKeySet::IsModifier() const
 {
-	return (IsKeyCode() and keyCodes.IsModifier(key)) || scanCodes.IsModifier(key);
+	return GetKeys().IsModifier(key);
 }
 
 bool CKeySet::IsKeyCode() const
@@ -56,25 +54,33 @@ bool CKeySet::IsKeyCode() const
 	return type == KSKeyCode;
 }
 
-CKeySet::CKeySet(int k, bool release)
+IKeys CKeySet::GetKeys() const
 {
-	CKeySet(k, release, KSKeyCode);
+	return IsKeyCode() ? (IKeys)keyCodes : (IKeys)scanCodes;
 }
 
-CKeySet::CKeySet(int k, bool release, CKeySetType keyType)
+CKeySet::CKeySet(int k)
+	: CKeySet(k, KSKeyCode) { }
+CKeySet::CKeySet(int k, CKeySetType keyType)
+	: CKeySet(k, GetCurrentModifiers(), keyType) { }
+CKeySet::CKeySet(int k, unsigned char mods, CKeySetType keyType)
 {
-	key = k;
-	modifiers = 0;
 	type = keyType;
+	key = k;
+	modifiers = mods;
+}
+
+
+unsigned char CKeySet::GetCurrentModifiers()
+{
+	unsigned char modifiers = 0;
 
 	if (KeyInput::GetKeyModState(KMOD_ALT))   { modifiers |= KS_ALT; }
 	if (KeyInput::GetKeyModState(KMOD_CTRL))  { modifiers |= KS_CTRL; }
 	if (KeyInput::GetKeyModState(KMOD_GUI))   { modifiers |= KS_META; }
 	if (KeyInput::GetKeyModState(KMOD_SHIFT)) { modifiers |= KS_SHIFT; }
 
-#ifndef DISALLOW_RELEASE_BINDINGS
-	if (release) { modifiers |= KS_RELEASE; }
-#endif
+	return modifiers;
 }
 
 
@@ -83,23 +89,9 @@ std::string CKeySet::GetString(bool useDefaultKeysym) const
 	std::string name;
 	std::string modstr;
 
-	if (useDefaultKeysym) {
-		if (IsKeyCode()) {
-			name = keyCodes.GetDefaultName(key);
-		} else {
-			name = scanCodes.GetDefaultName(key);
-		}
-	} else {
-		if (IsKeyCode()) {
-			name = keyCodes.GetName(key);
-		} else {
-			name = scanCodes.GetName(key);
-		}
-	}
-	
-#ifndef DISALLOW_RELEASE_BINDINGS
-	if (modifiers & KS_RELEASE) { modstr += "Up+"; }
-#endif
+	IKeys keys = GetKeys();
+	name = useDefaultKeysym ? keys.GetDefaultName(key) : keys.GetName(key);
+
 	if (modifiers & KS_ANYMOD)  { modstr += "Any+"; }
 	if (modifiers & KS_ALT)     { modstr += "Alt+"; }
 	if (modifiers & KS_CTRL)    { modstr += "Ctrl+"; }
@@ -132,7 +124,7 @@ bool CKeySet::Parse(const std::string& token, bool showerror)
 
 	// parse the modifiers
 	while (!s.empty()) {
-		if (ParseModifier(s, "up+",    "u+")) { modifiers |= KS_RELEASE; } else
+		if (ParseModifier(s, "up+",    "u+")) { LOG_L(L_WARNING, "KeySet: Up modifier is deprecated"); } else
 		if (ParseModifier(s, "any+",   "*+")) { modifiers |= KS_ANYMOD; } else
 		if (ParseModifier(s, "alt+",   "a+")) { modifiers |= KS_ALT; } else
 		if (ParseModifier(s, "ctrl+",  "c+")) { modifiers |= KS_CTRL; } else
@@ -141,10 +133,6 @@ bool CKeySet::Parse(const std::string& token, bool showerror)
 			break;
 		}
 	}
-
-#ifdef DISALLOW_RELEASE_BINDINGS
-	modifiers &= ~KS_RELEASE;
-#endif
 
 	if (s.empty()) {
 		Reset();
@@ -192,15 +180,13 @@ bool CKeySet::Parse(const std::string& token, bool showerror)
 // CTimedKeyChain
 //
 
-void CTimedKeyChain::push_back(const int key, const spring_time t, const bool isRepeat)
+void CTimedKeyChain::push_back(const CKeySet& ks, const spring_time t, const bool isRepeat)
 {
 	// clear chain on timeout
 	const auto dropTime = t - spring_msecs(keyBindings.GetKeyChainTimeout());
 
 	if (!empty() && times.back() < dropTime)
 		clear();
-
-	CKeySet ks(key, false);
 
 	// append repeating keystrokes only wjen they differ from the last
 	if (isRepeat && (!empty() && ks == back()))

@@ -212,7 +212,8 @@ public:
 private:
 	JobDispatcher jobDispatcher;
 
-	CTimedKeyChain curKeyChain;
+	CTimedKeyChain curKeyCodeChain;
+	CTimedKeyChain curScanCodeChain;
 
 	CWorldDrawer worldDrawer;
 

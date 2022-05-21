@@ -1813,7 +1813,7 @@ bool CGuiHandler::KeyPressed(int keyCode, int scanCode, bool isRepeat)
 		return true;
 	}
 
-	const CKeySet ks(keyCode, false);
+	const CKeySet ks(keyCode);
 
 	// setup actionOffset
 	//WTF a bit more documentation???
@@ -1833,7 +1833,7 @@ bool CGuiHandler::KeyPressed(int keyCode, int scanCode, bool isRepeat)
 		}
 	}
 
-	const CKeyBindings::ActionList& al = keyBindings.GetActionList(ks);
+	const CKeyBindings::ActionList& al = keyBindings.GetActionList(keyCode, scanCode);
 	for (int ali = 0; ali < (int)al.size(); ++ali) {
 		const int actionIndex = (ali + tmpActionOffset) % (int)al.size(); //????
 		const Action& action = al[actionIndex];

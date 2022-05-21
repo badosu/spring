@@ -36,27 +36,95 @@ void CScanCodes::Reset()
 	printableCodes.clear();
 	printableCodes.reserve(64);
 
-	AddPair("backspace", SDL_SCANCODE_BACKSPACE);
-	AddPair("tab",       SDL_SCANCODE_TAB);
-	AddPair("clear",     SDL_SCANCODE_CLEAR);
-	AddPair("enter",     SDL_SCANCODE_RETURN); //FIXME
-	AddPair("return",    SDL_SCANCODE_RETURN);
-	AddPair("pause",     SDL_SCANCODE_PAUSE);
-	AddPair("esc",       SDL_SCANCODE_ESCAPE);
-	AddPair("escape",    SDL_SCANCODE_ESCAPE);
-	AddPair("space",     SDL_SCANCODE_SPACE, true);
-	AddPair("delete",    SDL_SCANCODE_DELETE);
+	AddPair("sc_backspace", SDL_SCANCODE_BACKSPACE);
+	AddPair("sc_tab",       SDL_SCANCODE_TAB);
+	AddPair("sc_clear",     SDL_SCANCODE_CLEAR);
+	AddPair("sc_return",    SDL_SCANCODE_RETURN);
+	AddPair("sc_pause",     SDL_SCANCODE_PAUSE);
+	AddPair("sc_esc",       SDL_SCANCODE_ESCAPE);
+	AddPair("sc_escape",    SDL_SCANCODE_ESCAPE);
+	AddPair("sc_space",     SDL_SCANCODE_SPACE, true);
+	AddPair("sc_delete",    SDL_SCANCODE_DELETE);
 
-	// ASCII mapped keysyms
-	for (char i = ' '; i <= 'z'; ++i) {
-		if (isupper(i))
-			continue;
+	AddPair("sc_a",    SDL_SCANCODE_A);
+	AddPair("sc_b",    SDL_SCANCODE_B);
+	AddPair("sc_c",    SDL_SCANCODE_C);
+	AddPair("sc_d",    SDL_SCANCODE_D);
+	AddPair("sc_e",    SDL_SCANCODE_E);
+	AddPair("sc_f",    SDL_SCANCODE_F);
+	AddPair("sc_g",    SDL_SCANCODE_G);
+	AddPair("sc_h",    SDL_SCANCODE_H);
+	AddPair("sc_i",    SDL_SCANCODE_I);
+	AddPair("sc_j",    SDL_SCANCODE_J);
+	AddPair("sc_k",    SDL_SCANCODE_K);
+	AddPair("sc_l",    SDL_SCANCODE_L);
+	AddPair("sc_m",    SDL_SCANCODE_M);
+	AddPair("sc_n",    SDL_SCANCODE_N);
+	AddPair("sc_o",    SDL_SCANCODE_O);
+	AddPair("sc_p",    SDL_SCANCODE_P);
+	AddPair("sc_q",    SDL_SCANCODE_Q);
+	AddPair("sc_r",    SDL_SCANCODE_R);
+	AddPair("sc_s",    SDL_SCANCODE_S);
+	AddPair("sc_t",    SDL_SCANCODE_T);
+	AddPair("sc_u",    SDL_SCANCODE_U);
+	AddPair("sc_v",    SDL_SCANCODE_V);
+	AddPair("sc_w",    SDL_SCANCODE_W);
+	AddPair("sc_x",    SDL_SCANCODE_X);
+	AddPair("sc_y",    SDL_SCANCODE_Y);
+	AddPair("sc_z",    SDL_SCANCODE_Z);
+	AddPair("sc_0",    SDL_SCANCODE_0);
+	AddPair("sc_1",    SDL_SCANCODE_1);
+	AddPair("sc_2",    SDL_SCANCODE_2);
+	AddPair("sc_3",    SDL_SCANCODE_3);
+	AddPair("sc_4",    SDL_SCANCODE_4);
+	AddPair("sc_5",    SDL_SCANCODE_5);
+	AddPair("sc_6",    SDL_SCANCODE_6);
+	AddPair("sc_7",    SDL_SCANCODE_7);
+	AddPair("sc_8",    SDL_SCANCODE_8);
+	AddPair("sc_9",    SDL_SCANCODE_9);
 
-		AddPair("sc_" + std::string(1, i), SDL_GetScancodeFromName(&i), true);
-	}
+	AddPair("sc_comma", SDL_SCANCODE_COMMA, true);
 
+	// (Located in the top left corner (on both ANSI and ISO keyboards).
+	//
+	// Produces GRAVE ACCENT and TILDE in a US Windows layout and in US and UK Mac
+	// layouts on ANSI keyboards, GRAVE ACCENT and NOT SIGN in a UK Windows
+	// layout, SECTION SIGN and PLUS-MINUS SIGN in US and UK Mac layouts on ISO
+	// keyboards, SECTION SIGN and DEGREE SIGN in a Swiss German layout
+	// (Mac: only on ISO keyboards), CIRCUMFLEX ACCENT and DEGREE SIGN in a
+	// German layout (Mac: only on ISO keyboards), SUPERSCRIPT TWO and TILDE in
+	// a French Windows layout, COMMERCIAL AT and NUMBER SIGN in a French Mac
+	// layout on ISO keyboards, and LESS-THAN SIGN and GREATER-THAN SIGN in a
+	// Swiss German, German, or French Mac layout on ANSI keyboards.)
 	AddPair("sc_`", SDL_SCANCODE_GRAVE, true);
-	AddPair("backquote", SDL_SCANCODE_GRAVE, true);
+	AddPair("sc_backquote", SDL_SCANCODE_GRAVE, true);
+
+	// (Located at the lower left of the return key on ISO keyboards and at the
+	// right end of the QWERTY row on ANSI keyboards.
+	//
+	// Produces REVERSE SOLIDUS (backslash) and VERTICAL LINE in a US layout,
+	// REVERSE SOLIDUS and VERTICAL LINE in a UK Mac layout, NUMBER SIGN and
+	// TILDE in a UK Windows layout, DOLLAR SIGN and POUND SIGN in a Swiss
+	// German layout, NUMBER SIGN and APOSTROPHE in a German layout, GRAVE ACCENT
+	// and POUND SIGN in a French Mac layout, and ASTERISK and MICRO SIGN in a
+	// French Windows layout.)
+	AddPair("sc_\\", SDL_SCANCODE_BACKSLASH, true);
+	AddPair("sc_backslash", SDL_SCANCODE_BACKSLASH, true);
+
+	// This is the additional key that ISO keyboards have over ANSI ones, located
+	// between left shift and Y.
+	//
+	// Produces GRAVE ACCENT and TILDE in a US or UK Mac layout, REVERSE SOLIDUS
+	// (backslash) and VERTICAL LINE in a US or UK Windows layout, and LESS-THAN
+	// SIGN and GREATER-THAN SIGN in a Swiss German, German, or French layout.)
+	//
+	// Note from Spring developer: Games should not rely on this scancode for
+	// core features.
+	//
+	// However, even if the feature is obscure, games can add functionality for
+	// when the user has a keyboard that emits the key or users can bind to it
+	// without relying on the keycode.
+	AddPair("sc_nonusbacklash", SDL_SCANCODE_NONUSBACKSLASH, true);
 
 	// Numeric keypad
 	AddPair("sc_numpad0", SDL_SCANCODE_KP_0, true);
@@ -150,14 +218,14 @@ void CScanCodes::Reset()
 void CScanCodes::PrintNameToCode() const
 {
 	for (const auto& p: nameToCode) {
-		LOG("SCANNAME: %13s = 0x%03X", p.first.c_str(), p.second);
+		LOG("SCANNAME: %s = %d", p.first.c_str(), p.second);
 	}
 }
 
 void CScanCodes::PrintCodeToName() const
 {
 	for (const auto& p: codeToName) {
-		LOG("SCANCODE: 0x%03X = '%s'", p.first, p.second.c_str());
+		LOG("SCANCODE: %d = '%s'", p.first, p.second.c_str());
 	}
 }
 

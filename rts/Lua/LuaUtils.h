@@ -15,6 +15,7 @@
 // FIXME: use fwd-decls
 #include "System/EventClient.h"
 #include "Sim/Units/CommandAI/Command.h"
+#include "Game/UI/KeySet.h"
 #include "Sim/Misc/TeamHandler.h"
 #include "Sim/Misc/CollisionVolume.h"
 #include "Sim/Objects/SolidObject.h"
@@ -120,6 +121,7 @@ class LuaUtils {
 		static Command ParseCommandTable(lua_State* L, const char* caller, int table);
 		static void ParseCommandArray(lua_State* L, const char* caller, int table, vector<Command>& commands);
 		static int ParseFacing(lua_State* L, const char* caller, int index);
+		static bool ParseKeySetModifiers(lua_State* L, const char* caller, int idIndex, unsigned char& modifiers);
 
 		static void PushCurrentFuncEnv(lua_State* L, const char* caller);
 

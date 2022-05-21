@@ -24,6 +24,7 @@ public:
 
 	virtual void PrintNameToCode() const {};
 	virtual void PrintCodeToName() const {};
+	virtual bool IsModifier(int code) { return false; };
 
 	static bool IsValidLabel(const std::string& label);
 

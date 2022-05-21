@@ -8,7 +8,7 @@
 class CKeyCodes : public IKeys {
 public:
 
-	static bool IsModifier(int code);
+	bool IsModifier(int code);
 
 	void Reset();
 	void PrintNameToCode() const;
