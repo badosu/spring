@@ -125,6 +125,10 @@
 #include "System/Sync/DumpState.h"
 #include "System/TimeProfiler.h"
 
+#include <RmlUi/Core.h>
+#include "UI/RmlUI/RmlUIRender.h"
+#include "UI/RmlUI/RmlUI.h"
+
 
 #undef CreateDirectory
 
@@ -215,7 +219,10 @@ CR_REG_METADATA(CGame, (
 	CR_POSTLOAD(PostLoad)
 ))
 
-
+RenderInterface_GL3* rmlUIRender;
+CRmlUI* rmlUI;
+Rml::Context* context;
+Rml::ElementDocument* document;
 
 CGame::CGame(const std::string& mapFileName, const std::string& modFileName, ILoadSaveHandler* saveFile)
 	: frameStartTime(spring_gettime())
@@ -281,6 +288,21 @@ CGame::CGame(const std::string& mapFileName, const std::string& modFileName, ILo
 
 	CResourceHandler::CreateInstance();
 	CCategoryHandler::CreateInstance();
+
+	rmlUIRender = new RenderInterface_GL3();
+	rmlUI = new CRmlUI();
+
+	Rml::SetSystemInterface(rmlUI);
+	Rml::SetRenderInterface(rmlUIRender);
+	Rml::Initialise();
+
+	context = Rml::CreateContext("default", Rml::Vector2i(globalRendering->viewSizeX, globalRendering->viewSizeY));
+
+	Rml::LoadFontFace("/home/badosu/Code/spring/build-linux-64-RELWITHDEBINFO/install/fonts/FreeSansBold.otf");
+	document = context->LoadDocument("/home/badosu/Code/spring/build-linux-64-RELWITHDEBINFO/install/demo.rml");
+
+	if (document == nullptr)
+		LOG_L(L_ERROR, "DIDND LOAD DOCUMENT");
 }
 
 CGame::~CGame()
@@ -1002,11 +1024,18 @@ void CGame::ResizeEvent()
 	}
 }
 
-
 int CGame::KeyPressed(int keyCode, int scanCode, bool isRepeat)
 {
 	if (!gameOver && !isRepeat)
 		playerHandler.Player(gu->myPlayerNum)->currentStats.keyPresses++;
+
+	if (keyCode == 99) { //c
+		LOG_L(L_ERROR, "RENDER DOC PLS");
+		document->Show();
+	} else {
+		LOG_L(L_ERROR, "HIDE DOC PLS");
+		document->Hide();
+	}
 
 	const CKeySet kc(keyCode, CKeySet::KSKeyCode);
 	const CKeySet ks(scanCode, CKeySet::KSScanCode);
@@ -1352,6 +1381,7 @@ bool CGame::UpdateUnsynced(const spring_time currentTime)
 	mouse->UpdateCursors();
 	guihandler->Update();
 	commandDrawer->Update();
+	context->Update();
 
 	{
 		SCOPED_TIMER("Update::EventHandler");
@@ -1386,7 +1416,7 @@ bool CGame::Draw() {
 
 	SetDrawMode(gameNormalDraw);
 
-	// Bind per-drawFrame UBO
+	//// Bind per-drawFrame UBO
 	UniformConstants::GetInstance().Bind();
 
 	{
@@ -1465,6 +1495,8 @@ bool CGame::Draw() {
 
 		eventHandler.DrawScreenPost();
 	}
+
+	context->Render();
 
 	glEnable(GL_DEPTH_TEST);
 	glLoadIdentity();
