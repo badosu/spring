@@ -1,0 +1,58 @@
+#!/bin/bash
+
+LIBC_DIRS=(
+    "/lib64"
+    "/lib/x86_64-linux-gnu"
+    "/usr/lib/x86_64-linux-gnu"
+    "/usr/lib"
+    "/lib"
+)
+LIBC_NAMES=(
+    "libc.so.6"
+    "libc.so"
+)
+
+get_version () {
+    echo "$(                                      \
+        "$1" 2>/dev/null                          \
+        | head -1                                 \
+        | grep -P -o "(?<=version )[\d\.]+(?=\.)" \
+    )"
+}
+
+SPRING_DIR="$(dirname -- "$( readlink -f -- "$0"; )";)"
+cd "${SPRING_DIR}"
+
+LIBC_BUNDLED="${SPRING_DIR}/lib/libc.so.6"
+LIBC_BUNDLED_VERSION="$(get_version "${LIBC_BUNDLED}")"
+LD_BUNDLED="${SPRING_DIR}/lib/ld-linux-x86-64.so.2"
+LD_MOVED="${SPRING_DIR}/lib/ld-linux-x86-64-moved"
+
+for LIBC_DIR in ${LIBC_DIRS[@]}; do
+    for LIBC_NAME in ${LIBC_NAMES[@]}; do
+        LIBC_SYSTEM="${LIBC_DIR}/${LIBC_NAME}"
+        LIBC_SYSTEM_VERSION="$(get_version "${LIBC_SYSTEM}")"
+        if [ ! -z "${LIBC_SYSTEM_VERSION}" ]; then
+            versions="$(echo -e "${LIBC_SYSTEM_VERSION}\n${LIBC_BUNDLED_VERSION}")"
+            versions_sorted="$(sort --version-sort <<< "${versions}")"
+            if [ "${versions}" != "${versions_sorted}" ]; then
+                echo "System glibc is newer than bundled"
+                echo "Using system glibc"
+                export LD_PRELOAD="${LIBC_SYSTEM} ${LD_PRELOAD}"
+                if [ ! -L "${LD_BUNDLED}" ]; then
+                    mv -f "${LD_BUNDLED}" "${LD_MOVED}"
+                    ln -s -f "/lib64/ld-linux-x86-64.so.2" "${LD_BUNDLED}"
+                fi
+            elif [ -f "${LD_MOVED}" ]; then
+                mv -f "${LD_MOVED}" "${LD_BUNDLED}"
+            fi
+            break 2
+        fi
+    done
+done
+
+"${SPRING_DIR}/spring-legacy" "$@"
+
+if [ -f "${LD_MOVED}" ]; then
+    mv -f "${LD_MOVED}" "${LD_BUNDLED}"
+fi

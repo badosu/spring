@@ -67,6 +67,8 @@ make_global_var(sources_engine_Game
 		"${CMAKE_CURRENT_SOURCE_DIR}/UI/ProfileDrawer.cpp"
 		"${CMAKE_CURRENT_SOURCE_DIR}/UI/QuitBox.cpp"
 		"${CMAKE_CURRENT_SOURCE_DIR}/UI/ResourceBar.cpp"
+		"${CMAKE_CURRENT_SOURCE_DIR}/UI/RmlUI/RmlUI.cpp"
+		"${CMAKE_CURRENT_SOURCE_DIR}/UI/RmlUI/RmlUIRender.cpp"
 		"${CMAKE_CURRENT_SOURCE_DIR}/UI/SelectionKeyHandler.cpp"
 		"${CMAKE_CURRENT_SOURCE_DIR}/UI/ShareBox.cpp"
 		"${CMAKE_CURRENT_SOURCE_DIR}/UI/StartPosSelecter.cpp"

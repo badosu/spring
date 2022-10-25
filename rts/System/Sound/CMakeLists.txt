@@ -30,7 +30,9 @@ if    (NOT NO_SOUND)
 			Null/NullSound.cpp
 			OpenAL/ALShared.cpp
 			OpenAL/EFX.cpp
+#ifndef PREFER_STATIC_LIBS
 			OpenAL/EFXfuncs.cpp
+#endif
 			OpenAL/EFXPresets.cpp
 			OpenAL/AudioChannel.cpp
 			OpenAL/OggStream.cpp

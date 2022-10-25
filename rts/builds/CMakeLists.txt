@@ -64,7 +64,11 @@ macro    (create_engine_build_and_install_target targetName)
 		message(STATUS "Using ${targetName} as default engine")
 		add_dependencies(spring spring-${targetName}) # This also works for custom targets
 		add_dependencies(install-spring install-spring-${targetName}) # This also works for custom targets
-		set_target_properties(engine-${targetName} PROPERTIES OUTPUT_NAME "spring")
+		if    (BUNDLED_LIBC)
+			set_target_properties(engine-${targetName} PROPERTIES OUTPUT_NAME "spring-legacy")
+		else  (BUNDLED_LIBC)
+			set_target_properties(engine-${targetName} PROPERTIES OUTPUT_NAME "spring")
+		endif (BUNDLED_LIBC)
 	else()
 		set_target_properties(engine-${targetName} PROPERTIES OUTPUT_NAME "spring-${targetName}")
 	endif ()
