@@ -426,9 +426,10 @@ void CProjectileDrawer::CopyDepthBufferToTexture()
 
 #if 1
 	//no need to touch glViewport
-	const std::array<int, 4> screenRect = { 0, 0, globalRendering->viewSizeX, globalRendering->viewSizeY };
+	const std::array<int, 4> srcScreenRect = { globalRendering->viewPosX, globalRendering->viewPosY, globalRendering->viewPosX + globalRendering->viewSizeX, globalRendering->viewPosY + globalRendering->viewSizeY };
+	const std::array<int, 4> dstScreenRect = { 0, 0, globalRendering->viewSizeX, globalRendering->viewSizeY };
 
-	FBO::Blit(-1, depthFBO->GetId(), screenRect, screenRect, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	FBO::Blit(-1, depthFBO->GetId(), srcScreenRect, dstScreenRect, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 #else
 	GLint activeTex;
 	glGetIntegerv(GL_ACTIVE_TEXTURE, &activeTex);
@@ -1137,7 +1138,7 @@ void CProjectileDrawer::UpdatePerlin() {
 	}
 
 	perlinFB.Unbind();
-	glViewport(globalRendering->viewPosX, globalRendering->viewPosY, globalRendering->viewSizeX, globalRendering->viewSizeY);
+	globalRendering->LoadViewport();
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_DEPTH_TEST);
