@@ -63,6 +63,7 @@
 #include "Net/Protocol/NetProtocol.h"
 
 #include "Rendering/DebugColVolDrawer.h"
+#include "Rendering/DebugQuadFieldDrawer.h"
 #include "Rendering/DebugDrawerAI.h"
 #include "Rendering/IPathDrawer.h"
 #include "Rendering/Features/FeatureDrawer.h"
@@ -3269,6 +3270,18 @@ public:
 
 	bool Execute(const UnsyncedAction& action) const final {
 		InverseOrSetBool(DebugColVolDrawer::enable, action.GetArgs());
+		return true;
+	}
+};
+
+
+class DebugQuadFieldDrawerActionExecutor : public IUnsyncedActionExecutor {
+public:
+	DebugQuadFieldDrawerActionExecutor(): IUnsyncedActionExecutor("DebugQuadField", "Enable/Disable drawing of quad fields") {
+	}
+
+	bool Execute(const UnsyncedAction& action) const final {
+		InverseOrSetBool(DebugQuadFieldDrawer::enable, action.GetArgs());
 		return true;
 	}
 };
