@@ -152,10 +152,6 @@ void CCamera::Update(const UpdateParams& p)
 
 void CCamera::UpdateFrustum()
 {
-	// scale-factors for {x,y}-axes
-	float2 nAxisScales;
-	float2 fAxisScales;
-
 	assert(projType <= PROJTYPE_ORTHO);
 	if (projType == PROJTYPE_PERSP) {
 		const float2 tanHalfFOVs = {math::tan(GetHFOV() * 0.5f * math::DEG_TO_RAD), tanHalfFov}; // horz, vert
@@ -637,6 +633,7 @@ void CCamera::CalcFrustumLine(
 	const float a = 1.0f / (1.0f + normal.z);
 	const float b = -normal.x * normal.y * a;
 	float3 xdir = float3(1.0f - normal.x * normal.x * a, b, -normal.x);
+	xdir.z = std::max(std::fabs(xdir.z), 0.0001f) * std::copysign(1.0f, xdir.z);
 	float3 ydir = float3(b, 1.0f - normal.y * normal.y * a, -normal.y);
 	float3 pInt;
 

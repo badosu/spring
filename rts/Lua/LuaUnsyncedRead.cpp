@@ -2,6 +2,7 @@
 
 #include "LuaUnsyncedRead.h"
 
+#include "Logger.h"
 #include "LuaConfig.h"
 #include "LuaInclude.h"
 #include "LuaHandle.h"
@@ -2053,6 +2054,20 @@ int LuaUnsyncedRead::ClearFeaturesPreviousDrawFlag(lua_State* L)
 	return 0;
 }
 
+const float3 screenToWorldNearPlaneProjection(const float x, const float y){
+	const float nx = ((x / globalRendering->viewSizeX) * 2 - 1) * camera->nAxisScales.x;
+	const float ny = ((y / globalRendering->viewSizeY) * 2 - 1) * camera->nAxisScales.y;
+
+	return camera->GetPos() + camera->GetForward() * camera->GetNearPlaneDist() + camera->GetRight() * nx + camera->GetUp() * ny;
+}
+
+const float3 getTriangleNormal(const float3& v1, const float3& v2, const float3& v3) {
+	const float3 u = v1 - v2;
+	const float3 v = v3 - v2;
+
+	return v.cross(u).SafeANormalize();
+};
+
 /*** Get units inside a rectangle area on the map
  *
  * @function Spring.GetUnitsInScreenRectangle
@@ -2071,12 +2086,7 @@ int LuaUnsyncedRead::GetUnitsInScreenRectangle(lua_State* L)
 	float b = luaL_checkfloat(L, 4);
 
 	if (l > r) std::swap(l, r);
-	if (t > b) std::swap(t, b);
-
-	static CVisUnitQuadDrawer unitQuadIter;
-
-	unitQuadIter.ResetState();
-	readMap->GridVisibility(nullptr, &unitQuadIter, 1e9, CQuadField::BASE_QUAD_SIZE / SQUARE_SIZE);
+	if (t < b) std::swap(t, b);
 
 	const int readTeam = CLuaHandle::GetHandleReadTeam(L);
 	const int readATeam = CLuaHandle::GetHandleReadAllyTeam(L);
@@ -2117,31 +2127,38 @@ int LuaUnsyncedRead::GetUnitsInScreenRectangle(lua_State* L)
 	} break;
 	}
 
-	// Even though we're in unsynced it's ok to use gs->tempNum since its exact value
-// doesn't matter
-	const int tempNum = gs->GetTempNum();
-	lua_createtable(L, unitQuadIter.GetObjectCount(), 0);
+	const float3 nearBl = screenToWorldNearPlaneProjection(l, b);
+	const float3 nearTr = screenToWorldNearPlaneProjection(r, t);
+	const float3 nearBr = screenToWorldNearPlaneProjection(r, b);
+	const float3 nearTl = screenToWorldNearPlaneProjection(l, t);
+
+	const float3& camPos = camera->GetPos();
+
+	const float3 leftPlane = getTriangleNormal(camPos, nearBl, nearTl);
+	const float3 rightPlane = getTriangleNormal(camPos, nearTr, nearBr);
+	const float3 bottomPlane = getTriangleNormal(camPos, nearBr, nearBl);
+	const float3 topPlane = getTriangleNormal(camPos, nearTl, nearTr);
+
+	lua_newtable(L);
 
 	uint32_t count = 0;
-	for (auto visUnitList : unitQuadIter.GetObjectLists()) {
-		for (CUnit* unit : *visUnitList) {
+	for (int team = 0; team < teamHandler.ActiveTeams(); team++) {
+		for (CUnit* unit: unitHandler.GetUnitsByTeam(team)) {
 			if (disqualifierFunc(unit))
 				continue;
 
-			if (unit->tempNum == tempNum)
+			const float3 sBl = unit->midPos - nearBl;
+
+			if (sBl.dot(leftPlane) < 0.0f)
+				continue;
+			if (sBl.dot(bottomPlane) < 0.0f)
 				continue;
 
-			unit->tempNum = tempNum;
+			const float3 sTr = unit->midPos - nearTr;
 
-			const float3 vpPos = camera->CalcViewPortCoordinates(unit->drawPos);
-
-			if (vpPos.x > r || vpPos.x < l)
+			if (sTr.dot(rightPlane) < 0.0f)
 				continue;
-
-			if (vpPos.y > b || vpPos.y < t)
-				continue;
-
-			if (vpPos.z > 1.0f || vpPos.z < 0.0f)
+			if (sTr.dot(topPlane) < 0.0f)
 				continue;
 
 			lua_pushnumber(L, unit->id);

@@ -268,7 +268,8 @@ public:
 	float tanHalfFov  = 0.0f;  ///< math::tan(halfFov)
 	float lppScale    = 0.0f;  ///< length-per-pixel scale
 	float aspectRatio = 1.0f;  ///< horizontal
-
+	float2 nAxisScales;
+	float2 fAxisScales;
 	int viewport[4];
 
 	/**
